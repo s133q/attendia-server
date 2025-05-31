@@ -34,4 +34,11 @@ def login():
         return {"error": "Invalid credentials"}, 401
 
     token = generate_token()
-    return {"message": "Login successful", "token": token, "user_id": user.id}
+    return {
+        "message": "Login successful",
+        "token": token,
+        "user_id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name
+    }
+

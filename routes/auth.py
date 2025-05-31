@@ -8,7 +8,8 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.json
-    if not data.get("username") or not data.get("password"):
+    required_fields = ["username", "password", "first_name", "last_name"]
+    if not all(data.get(f) for f in required_fields):
         return {"error": "Missing fields"}, 400
 
     if User.query.filter_by(username=data["username"]).first():
@@ -16,11 +17,14 @@ def register():
 
     user = User(
         username=data["username"],
-        password_hash=hash_password(data["password"])
+        password_hash=hash_password(data["password"]),
+        first_name=data["first_name"],
+        last_name=data["last_name"]
     )
     db.session.add(user)
     db.session.commit()
     return {"message": "User registered successfully"}
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():

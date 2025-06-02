@@ -1,42 +1,37 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 from models import User
 from database import db
-from utils import hash_password, check_password, generate_token
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.json
-    required_fields = ['username', 'password', 'first_name', 'last_name']
-    if not all(data.get(f) for f in required_fields):
-        return {'error': 'Missing fields'}, 400
+    data = request.get_json()
+    if not data or not all(k in data for k in ('username', 'first_name', 'last_name', 'password')):
+        return jsonify({'error': 'Missing required fields'}), 400
 
     if User.query.filter_by(username=data['username']).first():
-        return {'error': 'User already exists'}, 409
+        return jsonify({'error': 'Username already exists'}), 409
 
-    user = User(
+    hashed_password = generate_password_hash(data['password'])
+    new_user = User(
         username=data['username'],
-        password_hash=hash_password(data['password']),
         first_name=data['first_name'],
-        last_name=data['last_name']
+        last_name=data['last_name'],
+        password_hash=hashed_password
     )
-    db.session.add(user)
+    db.session.add(new_user)
     db.session.commit()
-    return {'message': 'User registered successfully'}
+    return jsonify({'message': 'User registered successfully'}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    user = User.query.filter_by(username=data['username']).first()
-    if not user or not check_password(data['password'], user.password_hash):
-        return {'error': 'Invalid credentials'}, 401
+    data = request.get_json()
+    if not data or not all(k in data for k in ('username', 'password')):
+        return jsonify({'error': 'Missing username or password'}), 400
 
-    token = generate_token()
-    return {
-        'message': 'Login successful',
-        'token': token,
-        'user_id': user.id,
-        'first_name': user.first_name,
-        'last_name': user.last_name
-    }
+    user = User.query.filter_by(username=data['username']).first()
+    if user and check_password_hash(user.password_hash, data['password']):
+        return jsonify({'message': 'Login successful'}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401

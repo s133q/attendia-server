@@ -14,6 +14,11 @@ def create_app():
     CORS(app)
     db.init_app(app)
 
+    from models import User, Group, Student, Lesson, LessonDay, Attendance  # Імпортуй моделі, щоб SQLAlchemy знав про них
+
+    with app.app_context():
+        db.create_all()  # створення таблиць, якщо ще не створені
+
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(groups_bp, url_prefix='/groups')
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
@@ -22,7 +27,6 @@ def create_app():
 
     return app
 
-app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True)

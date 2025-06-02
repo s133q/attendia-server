@@ -14,5 +14,6 @@ class SyncItem(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     content = db.Column(db.String(500))
     last_modified = db.Column(db.DateTime, default=datetime.utcnow)
+    token = db.Column(db.String(36), unique=True)
 
 # Можеш пізніше додати тут Group, Lesson, Attendance тощо

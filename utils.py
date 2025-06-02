@@ -1,5 +1,6 @@
 import bcrypt
 import uuid
+from models import User
 
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -9,3 +10,6 @@ def check_password(password, hashed):
 
 def generate_token():
     return str(uuid.uuid4())
+
+def verify_token(token):
+    return User.query.filter_by(token=token).first()

@@ -34,7 +34,7 @@ def create_app():
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
     app.register_blueprint(students_bp, url_prefix='/students')
     app.register_blueprint(attendance_bp, url_prefix='/attendance')
-    app.register_blueprint(user_bp, url_prefix='/users')
+    app.register_blueprint(user_bp, url_prefix='/user')
 
     return app
 

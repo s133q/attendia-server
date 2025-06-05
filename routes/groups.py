@@ -22,3 +22,11 @@ def create_group():
 def get_groups(user_id):
     groups = Group.query.filter_by(user_id=user_id).all()
     return jsonify([{'id': g.id, 'name': g.name} for g in groups]), 200
+
+@groups_bp.route('/group/<int:group_id>', methods=['GET'])
+def get_group_by_id(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
+    return jsonify({'id': group.id, 'name': group.name, 'user_id': group.user_id}), 200
+

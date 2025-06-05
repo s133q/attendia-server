@@ -9,6 +9,10 @@ from routes.groups import groups_bp
 from routes.lessons import lessons_bp
 from routes.students import students_bp
 from routes.attendance import attendance_bp
+from routes.user import user_bp
+
+
+
 
 def create_app():
     app = Flask(__name__)
@@ -30,6 +34,7 @@ def create_app():
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
     app.register_blueprint(students_bp, url_prefix='/students')
     app.register_blueprint(attendance_bp, url_prefix='/attendance')
+    app.register_blueprint(user_bp)
 
     return app
 

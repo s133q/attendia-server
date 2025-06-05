@@ -3,7 +3,7 @@ from models import Group, User
 
 user_bp = Blueprint('user', __name__)
 
-@user_bp.route('/user/<int:user_id>/groups', methods=['GET'])
+@user_bp.route('/<int:user_id>/groups', methods=['GET'])
 def get_user_groups(user_id):
     user = User.query.get(user_id)
     if not user:
@@ -11,7 +11,7 @@ def get_user_groups(user_id):
     groups = Group.query.filter_by(user_id=user_id).all()
     return jsonify([{"id": g.id, "name": g.name} for g in groups])
 
-@user_bp.route('/user/<int:user_id>', methods=['PUT'])
+@user_bp.route('/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     user = User.query.get(user_id)
     if not user:

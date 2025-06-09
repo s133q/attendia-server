@@ -19,6 +19,8 @@ class Group(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
+    __table_args__ = (db.UniqueConstraint('user_id', 'name', name='_user_group_name_uc'),)
+
     students = db.relationship('Student', backref='group', cascade='all, delete', lazy=True)
     lessons = db.relationship('Lesson', backref='group', cascade='all, delete', lazy=True)
 

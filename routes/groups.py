@@ -10,8 +10,14 @@ def create_group():
     if not data or not all(k in data for k in ('name', 'user_id')):
         return jsonify({'error': 'Missing required fields'}), 400
 
-    if not User.query.get(data['user_id']):
+    user = User.query.get(data['user_id'])
+    if not user:
         return jsonify({'error': 'User not found'}), 404
+
+    # Перевірка на існування групи з такою назвою у цього користувача
+    existing_group = Group.query.filter_by(user_id=data['user_id'], name=data['name']).first()
+    if existing_group:
+        return jsonify({'error': 'Group with this name already exists for the user'}), 409
 
     new_group = Group(name=data['name'], user_id=data['user_id'])
     db.session.add(new_group)

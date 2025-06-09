@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from models import Lesson, Group
+from models import Lesson, Group, User, LessonDay
+from datetime import datetime
 from database import db
 
 lessons_bp = Blueprint('lessons', __name__)
@@ -22,7 +23,6 @@ def create_lesson():
     if not Group.query.get(group_id):
         return jsonify({'error': 'Group not found'}), 404
 
-    # Перевірка на існуюче заняття з такою ж назвою в цій групі
     existing_lesson = Lesson.query.filter_by(group_id=group_id, title=title).first()
     if existing_lesson:
         return jsonify({'error': 'Заняття з такою назвою вже існує'}), 400
@@ -30,7 +30,7 @@ def create_lesson():
     try:
         new_lesson = Lesson(title=title, group_id=group_id)
         db.session.add(new_lesson)
-        db.session.flush()  # Отримати lesson.id до коміту
+        db.session.flush() 
 
         for day in days:
             lesson_day = LessonDay(lesson_id=new_lesson.id, day_of_week=day)
@@ -47,9 +47,6 @@ def create_lesson():
 def get_lessons(group_id):
     lessons = Lesson.query.filter_by(group_id=group_id).all()
     return jsonify([{'id': l.id, 'title': l.title} for l in lessons]), 200
-
-from models import Lesson, Group, User, LessonDay
-from datetime import datetime
 
 @lessons_bp.route('/today/<int:user_id>', methods=['GET'])
 def get_todays_lessons(user_id):
@@ -97,6 +94,33 @@ def delete_lesson(lesson_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Не вдалося видалити заняття'}), 500
+
+@lessons_bp.route('/<int:lesson_id>', methods=['PUT'])
+def update_lesson(lesson_id):
+    data = request.json
+    title = data.get('title', '').strip()
+    days = data.get('days', [])
+
+    if not title:
+        return jsonify({'error': 'Назва обовʼязкова'}), 400
+    if not days:
+        return jsonify({'error': 'Потрібно обрати хоча б один день'}), 400
+
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({'error': 'Заняття не знайдено'}), 404
+
+    existing = Lesson.query.filter_by(group_id=lesson.group_id, title=title).first()
+    if existing and existing.id != lesson_id:
+        return jsonify({'error': 'Заняття з такою назвою вже існує'}), 400
+
+    lesson.title = title
+    LessonDay.query.filter_by(lesson_id=lesson_id).delete()
+    for d in days:
+        db.session.add(LessonDay(lesson_id=lesson_id, day_of_week=d))
+
+    db.session.commit()
+    return jsonify({'message': 'Оновлено'}), 200
 
 @lessons_bp.route('/<int:lesson_id>/days', methods=['GET'])
 def get_lesson_days(lesson_id):

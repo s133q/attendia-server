@@ -97,3 +97,12 @@ def delete_lesson(lesson_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Не вдалося видалити заняття'}), 500
+
+@lessons_bp.route('/<int:lesson_id>/days', methods=['GET'])
+def get_lesson_days(lesson_id):
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({'error': 'Lesson not found'}), 404
+
+    days = LessonDay.query.filter_by(lesson_id=lesson_id).all()
+    return jsonify([day.day_of_week for day in days]), 200

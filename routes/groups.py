@@ -30,6 +30,24 @@ def get_group_by_id(group_id):
         return jsonify({'error': 'Group not found'}), 404
     return jsonify({'id': group.id, 'name': group.name, 'user_id': group.user_id}), 200
 
+@groups_bp.route('/<int:group_id>', methods=['PUT'])
+def update_group_name(group_id):
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({'error': 'Missing group name'}), 400
+
+    group = Group.query.get(group_id)
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
+
+    group.name = data['name']
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Group name updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update group name'}), 500
+
 @groups_bp.route('/full/<int:group_id>', methods=['GET'])
 def get_full_group_data(group_id):
     group = Group.query.get(group_id)

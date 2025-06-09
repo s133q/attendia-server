@@ -79,3 +79,16 @@ def get_full_group_data(group_id):
         'students': student_data,
         'lessons': lesson_data
     }), 200
+
+@groups_bp.route('/<int:group_id>', methods=['DELETE'])
+def delete_group(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
+    try:
+        db.session.delete(group)
+        db.session.commit()
+        return '', 204
+    except Exception:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to delete group'}), 500

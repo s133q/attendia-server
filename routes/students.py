@@ -18,9 +18,14 @@ def add_student():
         last_name=data['last_name'],
         group_id=data['group_id']
     )
-    db.session.add(new_student)
-    db.session.commit()
-    return jsonify({'message': 'Student added successfully'}), 201
+
+    try:
+        db.session.add(new_student)
+        db.session.commit()
+        return jsonify({'message': 'Student added successfully'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to add student'}), 500
 
 @students_bp.route('/group/<int:group_id>', methods=['GET'])
 def get_students(group_id):

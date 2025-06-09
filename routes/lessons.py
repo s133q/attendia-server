@@ -7,16 +7,41 @@ lessons_bp = Blueprint('lessons', __name__)
 @lessons_bp.route('/', methods=['POST'])
 def create_lesson():
     data = request.get_json()
-    if not data or not all(k in data for k in ('title', 'group_id')):
+    if not data or not all(k in data for k in ('title', 'group_id', 'days')):
         return jsonify({'error': 'Missing required fields'}), 400
 
-    if not Group.query.get(data['group_id']):
+    title = data['title'].strip()
+    group_id = data['group_id']
+    days = data['days']
+
+    if not title:
+        return jsonify({'error': 'Назва заняття не може бути порожньою'}), 400
+    if not days:
+        return jsonify({'error': 'Потрібно вибрати хоча б один день'}), 400
+
+    if not Group.query.get(group_id):
         return jsonify({'error': 'Group not found'}), 404
 
-    new_lesson = Lesson(title=data['title'], group_id=data['group_id'])
-    db.session.add(new_lesson)
-    db.session.commit()
-    return jsonify({'message': 'Lesson created successfully'}), 201
+    # Перевірка на існуюче заняття з такою ж назвою в цій групі
+    existing_lesson = Lesson.query.filter_by(group_id=group_id, title=title).first()
+    if existing_lesson:
+        return jsonify({'error': 'Заняття з такою назвою вже існує'}), 400
+
+    try:
+        new_lesson = Lesson(title=title, group_id=group_id)
+        db.session.add(new_lesson)
+        db.session.flush()  # Отримати lesson.id до коміту
+
+        for day in days:
+            lesson_day = LessonDay(lesson_id=new_lesson.id, day_of_week=day)
+            db.session.add(lesson_day)
+
+        db.session.commit()
+        return jsonify({'message': 'Заняття створено успішно', 'lesson_id': new_lesson.id}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Помилка при створенні заняття: {str(e)}'}), 500
 
 @lessons_bp.route('/group/<int:group_id>', methods=['GET'])
 def get_lessons(group_id):

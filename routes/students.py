@@ -31,3 +31,13 @@ def add_student():
 def get_students(group_id):
     students = Student.query.filter_by(group_id=group_id).all()
     return jsonify([{'id': s.id, 'first_name': s.first_name, 'last_name': s.last_name} for s in students]), 200
+
+@students_bp.route('/<int:student_id>', methods=['DELETE'])
+def delete_student(student_id):
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({'error': 'Студент не знайдений'}), 404
+
+    db.session.delete(student)
+    db.session.commit()
+    return jsonify({'message': 'Студента видалено'}), 200

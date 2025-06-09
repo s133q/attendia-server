@@ -41,7 +41,7 @@ class Lesson(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     title = db.Column(db.String(255), nullable=False)
 
-    lesson_days = db.relationship('LessonDay', backref='lesson', cascade='all, delete', lazy=True)
+    lesson_days = db.relationship('LessonDay', backref='lesson', cascade='all, delete-orphan', lazy=True)
     attendance = db.relationship('Attendance', backref='lesson', cascade='all, delete', lazy=True)
 
 

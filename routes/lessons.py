@@ -83,3 +83,17 @@ def get_todays_lessons(user_id):
     ]
 
     return jsonify(result), 200
+
+@lessons_bp.route('/<int:lesson_id>', methods=['DELETE'])
+def delete_lesson(lesson_id):
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({'error': 'Заняття не знайдено'}), 404
+
+    try:
+        db.session.delete(lesson)
+        db.session.commit()
+        return jsonify({'message': 'Заняття успішно видалено'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Не вдалося видалити заняття'}), 500

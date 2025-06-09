@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import Group, User
+from models import Group, User, Student, Lesson, LessonDay
 from database import db
 
 groups_bp = Blueprint('groups', __name__)
@@ -30,3 +30,28 @@ def get_group_by_id(group_id):
         return jsonify({'error': 'Group not found'}), 404
     return jsonify({'id': group.id, 'name': group.name, 'user_id': group.user_id}), 200
 
+@groups_bp.route('/group/full/<int:group_id>', methods=['GET'])
+def get_full_group_data(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
+
+    students = Student.query.filter_by(group_id=group_id).order_by(Student.last_name).all()
+    student_data = [{'id': s.id, 'first_name': s.first_name, 'last_name': s.last_name} for s in students]
+
+    lessons = Lesson.query.filter_by(group_id=group_id).all()
+    lesson_data = []
+    for lesson in lessons:
+        lesson_days = LessonDay.query.filter_by(lesson_id=lesson.id).all()
+        days = [ld.day_of_week for ld in lesson_days]
+        lesson_data.append({
+            'id': lesson.id,
+            'title': lesson.title,
+            'days': days
+        })
+
+    return jsonify({
+        'group': {'id': group.id, 'name': group.name},
+        'students': student_data,
+        'lessons': lesson_data
+    }), 200

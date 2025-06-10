@@ -11,9 +11,6 @@ from routes.students import students_bp
 from routes.attendance import attendance_bp
 from routes.user import user_bp
 
-
-
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)

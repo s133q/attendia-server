@@ -143,5 +143,14 @@ def get_lesson_info(lesson_id):
     lesson = Lesson.query.get(lesson_id)
     if not lesson:
         return jsonify({'error': 'Lesson not found'}), 404
+
     group = lesson.group
-    return jsonify({'lesson_title': lesson.title, 'group_name': group.name}), 200
+
+    days = [ld.day_of_week for ld in lesson.lesson_days]
+
+    return jsonify({
+        'lesson_title': lesson.title,
+        'group_name': group.name,
+        'days': days
+    }), 200
+

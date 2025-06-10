@@ -137,3 +137,11 @@ def get_lesson_by_id(lesson_id):
     if lesson:
         return jsonify({'id': lesson.id, 'title': lesson.title}), 200
     return jsonify({'error': 'Lesson not found'}), 404
+
+@lessons_bp.route('/<int:lesson_id>/info', methods=['GET'])
+def get_lesson_info(lesson_id):
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({'error': 'Lesson not found'}), 404
+    group = lesson.group
+    return jsonify({'lesson_title': lesson.title, 'group_name': group.name}), 200

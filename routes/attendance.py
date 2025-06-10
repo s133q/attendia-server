@@ -8,34 +8,37 @@ attendance_bp = Blueprint('attendance', __name__)
 @attendance_bp.route('/', methods=['POST'])
 def mark_attendance():
     data = request.get_json()
-    for k in ('lesson_id','student_id','date','present'):
-        if k not in data:
-            return jsonify({'error': f'Missing {k}'}), 400
+    if not data:
+        return jsonify({'error': 'No input data'}), 400
+
+    student_id = data.get('student_id')
+    lesson_id = data.get('lesson_id')
+    date_str = data.get('date')
+    present = data.get('present')
+
+    if not all([student_id, lesson_id, date_str, present in [True, False]]):
+        return jsonify({'error': 'Missing or invalid fields'}), 400
 
     try:
-        date_obj = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
 
-    if not Lesson.query.get(data['lesson_id']) or not Student.query.get(data['student_id']):
-        return jsonify({'error': 'Lesson or Student not found'}), 404
-
-    rec = Attendance.query.filter_by(
-        lesson_id=data['lesson_id'],
-        student_id=data['student_id'],
-        date=date_obj
+    attendance = Attendance.query.filter_by(
+        student_id=student_id, lesson_id=lesson_id, date=date_obj
     ).first()
-    if rec:
-        rec.present = data['present']
+
+    if attendance:
+        attendance.present = present
         msg = 'updated'
     else:
-        rec = Attendance(
-            lesson_id=data['lesson_id'],
-            student_id=data['student_id'],
+        attendance = Attendance(
+            student_id=student_id,
+            lesson_id=lesson_id,
             date=date_obj,
-            present=data['present']
+            present=present
         )
-        db.session.add(rec)
+        db.session.add(attendance)
         msg = 'created'
 
     db.session.commit()

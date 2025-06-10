@@ -22,7 +22,10 @@ def create_group():
     new_group = Group(name=data['name'], user_id=data['user_id'])
     db.session.add(new_group)
     db.session.commit()
-    return jsonify({'message': 'Group created successfully'}), 201
+   return jsonify({
+        'message': 'Group created successfully',
+        'group_id': new_group.id  # <-- додано
+    }), 201
 
 @groups_bp.route('/<int:user_id>', methods=['GET'])
 def get_groups(user_id):

@@ -41,3 +41,23 @@ def delete_student(student_id):
     db.session.delete(student)
     db.session.commit()
     return jsonify({'message': 'Студента видалено'}), 200
+
+@students_bp.route('/<int:student_id>', methods=['PUT'])
+def update_student(student_id):
+    data = request.get_json()
+    if not data or not all(k in data for k in ('first_name', 'last_name')):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+
+    student.first_name = data['first_name']
+    student.last_name = data['last_name']
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Student updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update student'}), 500

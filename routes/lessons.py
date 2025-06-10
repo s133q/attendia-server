@@ -130,3 +130,10 @@ def get_lesson_days(lesson_id):
 
     days = LessonDay.query.filter_by(lesson_id=lesson_id).all()
     return jsonify([day.day_of_week for day in days]), 200
+
+@lessons_bp.route('/<int:lesson_id>', methods=['GET'])
+def get_lesson_by_id(lesson_id):
+    lesson = Lesson.query.get(lesson_id)
+    if lesson:
+        return jsonify({'id': lesson.id, 'title': lesson.title}), 200
+    return jsonify({'error': 'Lesson not found'}), 404

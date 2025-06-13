@@ -1,3 +1,9 @@
+from flask import Blueprint, request, jsonify
+from models import Group, User, Student, Lesson, LessonDay, Attendance
+from database import db
+
+attendance_bp = Blueprint('attendance', __name__)
+
 @attendance_bp.route('/', methods=['GET'])
 def get_attendance_records():
     lesson_id = request.args.get('lesson_id', type=int)

@@ -24,11 +24,6 @@ def create_group():
     db.session.commit()
     return jsonify({'message': 'Group created successfully', 'group_id': new_group.id}), 201
 
-@groups_bp.route('/<int:user_id>', methods=['GET'])
-def get_groups(user_id):
-    groups = Group.query.filter_by(user_id=user_id).all()
-    return jsonify([{'id': g.id, 'name': g.name} for g in groups]), 200
-
 @groups_bp.route('/<int:group_id>', methods=['GET'])
 def get_group_by_id(group_id):
     group = Group.query.get(group_id)

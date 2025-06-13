@@ -92,3 +92,18 @@ def delete_group(group_id):
     except Exception:
         db.session.rollback()
         return jsonify({'error': 'Failed to delete group'}), 500
+
+@groups_bp.route('/<int:group_id>/students', methods=['GET'])
+def get_students_in_group(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
+
+    students = Student.query.filter_by(group_id=group_id).order_by(Student.last_name, Student.first_name).all()
+    # Серіалізуємо дані студентів
+    students_data = [
+        {'id': s.id, 'first_name': s.first_name, 'last_name': s.last_name, 'group_id': s.group_id}
+        for s in students
+    ]
+    return jsonify(students_data), 200
+

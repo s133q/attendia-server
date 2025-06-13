@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import Group, User, Student, Lesson, LessonDay, Attendance
 from database import db
+from datetime import datetime
 
 attendance_bp = Blueprint('attendance', __name__)
 
